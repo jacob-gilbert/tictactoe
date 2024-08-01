@@ -4,3 +4,4 @@
 - Restart available to play multiple games
 - Equipped with a functioning scoreboard
 - Able to reset the score without restarting the program
+- Keeps track of the number of games played
