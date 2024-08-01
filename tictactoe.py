@@ -86,10 +86,18 @@ def update_score(winner):
 
     if (winner == "X"):
         winsX += 1
-        scoreboardX.config(text=f"X->{winsX}")
+        scoreboardX.config(text=f"X-> {winsX}")
     else:
         winsO += 1
-        scoreboardX.config(text=f"X->{winsX}")
+        scoreboardO.config(text=f"O-> {winsO}")
+
+def reset_score():
+    global winsX, winsO
+
+    winsX, winsO = 0, 0
+
+    scoreboardX.config(text=f"X-> {winsX}")
+    scoreboardO.config(text=f"O-> {winsO}")
 
 
 # game setup
@@ -104,11 +112,13 @@ game_over = False
 winsX = 0
 winsO = 0
 
+
 # hexidecimal notation for colors
 blue = "#4584b6"
 yellow = "#ffde57"
 gray = "#343434"
 light_gray = "#646464"
+
 
 # window setup
 window = tkinter.Tk()
@@ -120,6 +130,7 @@ label = tkinter.Label(frame, text=curr_player+"'s turn", font=("Consolas", 20),
                       background=gray, foreground="white")
 label.grid(row=0, column=0, columnspan=3, sticky="we")
 
+
 # assigning each place on the board a button
 for row in range(3):
     for column in range(3):
@@ -128,25 +139,34 @@ for row in range(3):
                                             command=lambda row=row, column=column: set_tile(row, column))
         board[row][column].grid(row=row+1, column=column) # the label is at row 0 so offset it by 1
 
+
 # creating a restart button
-restart_button = tkinter.Button(frame, text="restart", font=("Consolas", 20), background=gray,
+restart_button = tkinter.Button(frame, text="restart", font=("Consolas", 16), background=gray,
                         foreground="white", command=new_game)
-restart_button.grid(row=4, column=0, columnspan=3, sticky="we")
+restart_button.grid(row=4, column=0, columnspan=2, sticky="we")
+
 
 # create a scoreboard
 score_label = tkinter.Label(frame, text="Score:", font=("Consolas", 20),
                       background=gray, foreground="white")
 score_label.grid(row=5, column=0, columnspan=1, sticky="we")
 
-scoreboardX = tkinter.Label(frame, text=f"X->{winsX}", font=("Consolas", 20),
+scoreboardX = tkinter.Label(frame, text=f"X-> {winsX}", font=("Consolas", 20),
                       background=gray, foreground="white")
 scoreboardX.grid(row=5, column=1, columnspan=1, sticky="we")
 
-scoreboardO = tkinter.Label(frame, text=f"O->{winsO}", font=("Consolas", 20),
+scoreboardO = tkinter.Label(frame, text=f"O-> {winsO}", font=("Consolas", 20),
                       background=gray, foreground="white")
 scoreboardO.grid(row=5, column=2, columnspan=1, sticky="we")
 
+
+# reset scoreboard button
+reset_scoreboard = tkinter.Button(frame, text="reset score", font=("Consolas", 16),
+                      background=gray, foreground="white", command=reset_score)
+reset_scoreboard.grid(row=4, column=2, columnspan=1, sticky="nswe")
+
 frame.pack()
+
 
 # center the window
 window.update()
@@ -157,6 +177,7 @@ screen_height = window.winfo_screenheight()
 
 window_x = int((screen_width/2) - (window_width/2))
 window_y = int((screen_height/2) - (window_height/2))
+
 
 # format "(w)x(h)+(x)+(y)"
 window.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}")
