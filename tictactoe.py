@@ -80,6 +80,8 @@ def new_game():
     for row in range(3):
         for column in range(3):
             board[row][column].config(text="", foreground=blue, background=gray)
+    
+    update_games_played()
 
 def update_score(winner):
     global winsX, winsO
@@ -99,6 +101,13 @@ def reset_score():
     scoreboardX.config(text=f"X-> {winsX}")
     scoreboardO.config(text=f"O-> {winsO}")
 
+def update_games_played():
+    global num_games
+
+    num_games += 1
+
+    games_played.config(text=f"Game {num_games}")
+
 
 # game setup
 playerX = "X"
@@ -111,6 +120,7 @@ turns = 0
 game_over = False
 winsX = 0
 winsO = 0
+num_games = 1
 
 
 # hexidecimal notation for colors
@@ -128,7 +138,7 @@ window.resizable(False, False) # does not let the user resize the window's width
 frame = tkinter.Frame(window) # puts the window inside the frame
 label = tkinter.Label(frame, text=curr_player+"'s turn", font=("Consolas", 20),
                       background=gray, foreground="white")
-label.grid(row=0, column=0, columnspan=3, sticky="we")
+label.grid(row=0, column=0, columnspan=2, sticky="we")
 
 
 # assigning each place on the board a button
@@ -139,6 +149,10 @@ for row in range(3):
                                             command=lambda row=row, column=column: set_tile(row, column))
         board[row][column].grid(row=row+1, column=column) # the label is at row 0 so offset it by 1
 
+# creating a tracker for the number of games played
+games_played = tkinter.Label(frame, text=f"Game {num_games}", font=("Consolas", 20),
+                      background=gray, foreground="white")
+games_played.grid(row=0, column=2, columnspan=1, sticky="we")
 
 # creating a restart button
 restart_button = tkinter.Button(frame, text="restart", font=("Consolas", 16), background=gray,
