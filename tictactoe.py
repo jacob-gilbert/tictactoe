@@ -33,6 +33,7 @@ def check_winner():
             for column in range(3):
                 board[row][column].config(foreground=yellow, background=light_gray)
             game_over = True
+            update_score(board[row][0]["text"])
             return
     
     # check vertically
@@ -43,6 +44,7 @@ def check_winner():
             for row in range(3):
                 board[row][column].config(foreground=yellow, background=light_gray)
             game_over = True
+            update_score(board[0][column]["text"])
             return
         
     # check diagonally
@@ -52,6 +54,7 @@ def check_winner():
         for i in range(3):
             board[i][i].config(foreground=yellow, background=light_gray)
         game_over = True
+        update_score(board[0][0]["text"])
         return
     
     if (board[0][2]["text"] == board[1][1]["text"] == board[2][0]["text"]
@@ -60,6 +63,7 @@ def check_winner():
         for i in range(3):
             board[i][2 - i].config(foreground=yellow, background=light_gray)
         game_over = True
+        update_score(board[0][2]["text"])
         return
     
     if (turns == 9 and game_over != True):
@@ -77,6 +81,16 @@ def new_game():
         for column in range(3):
             board[row][column].config(text="", foreground=blue, background=gray)
 
+def update_score(winner):
+    global winsX, winsO
+
+    if (winner == "X"):
+        winsX += 1
+        scoreboardX.config(text=f"X->{winsX}")
+    else:
+        winsO += 1
+        scoreboardX.config(text=f"X->{winsX}")
+
 
 # game setup
 playerX = "X"
@@ -87,6 +101,8 @@ board = [[0, 0, 0],
          [0, 0, 0]]
 turns = 0
 game_over = False
+winsX = 0
+winsO = 0
 
 # hexidecimal notation for colors
 blue = "#4584b6"
@@ -116,6 +132,19 @@ for row in range(3):
 restart_button = tkinter.Button(frame, text="restart", font=("Consolas", 20), background=gray,
                         foreground="white", command=new_game)
 restart_button.grid(row=4, column=0, columnspan=3, sticky="we")
+
+# create a scoreboard
+score_label = tkinter.Label(frame, text="Score:", font=("Consolas", 20),
+                      background=gray, foreground="white")
+score_label.grid(row=5, column=0, columnspan=1, sticky="we")
+
+scoreboardX = tkinter.Label(frame, text=f"X->{winsX}", font=("Consolas", 20),
+                      background=gray, foreground="white")
+scoreboardX.grid(row=5, column=1, columnspan=1, sticky="we")
+
+scoreboardO = tkinter.Label(frame, text=f"O->{winsO}", font=("Consolas", 20),
+                      background=gray, foreground="white")
+scoreboardO.grid(row=5, column=2, columnspan=1, sticky="we")
 
 frame.pack()
 
