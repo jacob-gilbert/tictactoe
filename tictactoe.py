@@ -1,15 +1,15 @@
 import tkinter # graphical user interface library
 
 def set_tile(row, column):
-    global curr_player # using global so it is not treated like a local variable
+    global curr_player, game_over, curr_board # using global so it is not treated like a local variable
 
     if (game_over):
         return
 
-    if board[row][column]["text"] != "": # prevents overriding an already taken spot
+    if curr_board[row][column]["text"] != "": # prevents overriding an already taken spot
         return
 
-    board[row][column]["text"] = curr_player # mark the board
+    curr_board[row][column]["text"] = curr_player # mark the board
 
     if curr_player == playerO: # switch players
         curr_player = playerX
@@ -19,67 +19,60 @@ def set_tile(row, column):
     label["text"] = curr_player+"'s turn"
 
     # check winner
-    check_winner()
+    is_winner, winning_squares = check_winner(curr_board)
+    if is_winner:
+        game_over = True
+        for square in winning_squares:
+            square.config(foreground=yellow, background=light_gray)
+        label.config(text=square["text"]+" is the winner!", foreground=yellow)
+        update_score(square["text"])
+    
+    check_tie(curr_board)
 
-def check_winner():
-    global turns, game_over
-    turns += 1
+def check_winner(board):
+    global game_over
 
     # check horizontally
     for row in range(3):
-        if (board[row][0]["text"] == board[row][1]["text"] == board[row][2]["text"]
-            and board[row][0]["text"] != ""):
-            label.config(text=board[row][0]["text"]+" is the winner!", foreground=yellow)
-            for column in range(3):
-                board[row][column].config(foreground=yellow, background=light_gray)
-            game_over = True
-            update_score(board[row][0]["text"])
-            return
+        if (board[row][0]["text"] != "" and board[row][0]["text"] == board[row][1]["text"] == board[row][2]["text"]):
+            return True, [board[row][0], board[row][1], board[row][2]]
     
     # check vertically
     for column in range(3):
-        if (board[0][column]["text"] == board[1][column]["text"] == board[2][column]["text"]
-            and board[0][column]["text"] != ""):
-            label.config(text=board[0][column]["text"]+" is the winner!", foreground=yellow)
-            for row in range(3):
-                board[row][column].config(foreground=yellow, background=light_gray)
-            game_over = True
-            update_score(board[0][column]["text"])
-            return
+        if (board[0][column]["text"] != "" and board[0][column]["text"] == board[1][column]["text"] == board[2][column]["text"]):
+            return True, [board[0][column], board[1][column], board[2][column]]
         
     # check diagonally
-    if (board[0][0]["text"] == board[1][1]["text"] == board[2][2]["text"]
-         and board[0][0]["text"] != ""):
-        label.config(text=board[0][0]["text"]+" is the winner!", foreground=yellow)
-        for i in range(3):
-            board[i][i].config(foreground=yellow, background=light_gray)
-        game_over = True
-        update_score(board[0][0]["text"])
-        return
+    if (board[0][0]["text"] != "" and board[0][0]["text"] == board[1][1]["text"] == board[2][2]["text"]):
+        return True, [board[0][0], board[1][1], board[2][2]]
     
     if (board[0][2]["text"] == board[1][1]["text"] == board[2][0]["text"]
         and board[0][2]["text"] != ""):
-        label.config(text=board[0][2]["text"]+" is the winner!", foreground=yellow)
-        for i in range(3):
-            board[i][2 - i].config(foreground=yellow, background=light_gray)
-        game_over = True
-        update_score(board[0][2]["text"])
-        return
+        return True, [board[0][2], board[1][1], board[2][0]]
     
-    if (turns == 9 and game_over != True):
+    return False, None
+
+def check_tie(board):
+    global game_over
+
+    turn_count = 0
+    for row in range(3):
+        for col in range(3):
+            if board[row][col]["text"] == "X" or board[row][col]["text"] == "O":
+                turn_count += 1
+    if (turn_count == 9 and not game_over):
         game_over = True
         label.config(text="Tie!", foreground=yellow)
 
 def new_game():
-    global turns, game_over
+    global game_over, curr_board
 
-    turns = 0
     game_over = False
     label.config(text=curr_player+"'s turn", foreground="white")
     
     for row in range(3):
         for column in range(3):
-            board[row][column].config(text="", foreground=blue, background=gray)
+            curr_board[row][column].config(text="", foreground=blue, background=gray)
     
     update_games_played()
 
@@ -108,19 +101,40 @@ def update_games_played():
 
     games_played.config(text=f"Game {num_games}")
 
+def play_ai():
+    global num_games, ai_active
+
+    # if ai is on then turn it off, if its off turn it on
+    ai_active = not ai_active
+    if not ai_active: # if the ai was just turned off we can ignore the rest of the function
+        num_games = 1
+        games_played.config(text=f"Game {num_games}")
+        return
+
+    new_game()
+
+    # reset the number of games played
+    num_games = 1
+    games_played.config(text=f"Game {num_games}")
+
+
+# minimax algorithm
+def minimax(position, depth, is_maximizing):
+    pass
+
 
 # game setup
 playerX = "X"
 playerO = "O"
 curr_player = playerX
-board = [[0, 0, 0],
+curr_board = [[0, 0, 0],
          [0, 0, 0],
          [0, 0, 0]]
-turns = 0
 game_over = False
 winsX = 0
 winsO = 0
 num_games = 1
+ai_active = False
 
 
 # hexidecimal notation for colors
@@ -144,20 +158,22 @@ label.grid(row=0, column=0, columnspan=2, sticky="we")
 # assigning each place on the board a button
 for row in range(3):
     for column in range(3):
-        board[row][column] = tkinter.Button(frame, text="", font=("Consolas", 50, "bold"),
+        curr_board[row][column] = tkinter.Button(frame, text="", font=("Consolas", 50, "bold"),
                                             background=gray, foreground=blue, width=4, height=1,
                                             command=lambda row=row, column=column: set_tile(row, column))
-        board[row][column].grid(row=row+1, column=column) # the label is at row 0 so offset it by 1
+        curr_board[row][column].grid(row=row+1, column=column) # the label is at row 0 so offset it by 1
+
 
 # creating a tracker for the number of games played
 games_played = tkinter.Label(frame, text=f"Game {num_games}", font=("Consolas", 20),
                       background=gray, foreground="white")
 games_played.grid(row=0, column=2, columnspan=1, sticky="we")
 
+
 # creating a restart button
 restart_button = tkinter.Button(frame, text="restart", font=("Consolas", 16), background=gray,
                         foreground="white", command=new_game)
-restart_button.grid(row=4, column=0, columnspan=2, sticky="we")
+restart_button.grid(row=4, column=0, columnspan=1, sticky="we")
 
 
 # create a scoreboard
@@ -178,6 +194,12 @@ scoreboardO.grid(row=5, column=2, columnspan=1, sticky="we")
 reset_scoreboard = tkinter.Button(frame, text="reset score", font=("Consolas", 16),
                       background=gray, foreground="white", command=reset_score)
 reset_scoreboard.grid(row=4, column=2, columnspan=1, sticky="nswe")
+
+
+# button to play against an AI
+activate_AI = tkinter.Button(frame, text="Play AI", font=("Consolas", 16),
+                      background=gray, foreground="red", command=play_ai)
+activate_AI.grid(row=4, column=1, columnspan=1, sticky="nswe")
 
 frame.pack()
 
